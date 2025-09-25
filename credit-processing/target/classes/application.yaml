@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/tasks_t1}
+    username: ${SPRING_DATASOURCE_USERNAME:bank}
+    password: ${SPRING_DATASOURCE_PASSWORD:bankpass}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8083

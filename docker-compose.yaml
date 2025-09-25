@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: bankpass
+      POSTGRES_DB: tasks_t1
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  client-processing:
+    build:
+      context: .
+      dockerfile: client-processing/src/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tasks_t1
+      SPRING_DATASOURCE_USERNAME: bank
+      SPRING_DATASOURCE_PASSWORD: bankpass
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    restart: always
+
+  account-processing:
+    build:
+      context: .
+      dockerfile: account-processing/src/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tasks_t1
+      SPRING_DATASOURCE_USERNAME: bank
+      SPRING_DATASOURCE_PASSWORD: bankpass
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+    restart: always
+
+  credit-processing:
+    build:
+      context: .
+      dockerfile: credit-processing/src/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tasks_t1
+      SPRING_DATASOURCE_USERNAME: bank
+      SPRING_DATASOURCE_PASSWORD: bankpass
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    restart: always
+
+volumes:
+  pgdata:
