@@ -14,6 +14,78 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: bitnami/kafka:3.4
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    depends_on:
+      - zookeeper
+
+  kafka-topics-setup:
+    image: bitnami/kafka:3.4
+    depends_on:
+      - kafka
+    restart: "no"  
+    command: |
+      bash -c "
+      echo 'Waiting for Kafka...' &&
+      sleep 20 &&
+      echo 'Creating topics...' &&
+      
+      ## МС-1
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.registration.command --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.products.command --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.credit.products.command --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.cards.command --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&
+      
+      ## МС-2
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.transactions.event --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=2592000000 &&
+      
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.products.created.event --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.credit.products.created.event --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&  
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.cards.created.event --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&
+      
+      ## МС-3
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.credit.decision.event --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.payment.schedule.event --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=2592000000 &&
+      
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.notification.event --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=604800000 &&
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.errors.dlq --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config cleanup.policy=compact --config retention.ms=2592000000 &&
+      
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.info.request --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=86400000 &&
+      /opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --topic client.info.response --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 --config retention.ms=86400000 &&
+      
+      # echo '=== List of all topics ===' &&
+      /opt/bitnami/kafka/bin/kafka-topics.sh --list --bootstrap-server kafka:9092
+      "
+
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+      - kafka-topics-setup 
 
   client-processing:
     build:

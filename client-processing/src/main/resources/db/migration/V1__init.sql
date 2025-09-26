@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     login VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL
+    email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP
 );
 
 -- CLIENTS
@@ -18,7 +20,9 @@ CREATE TABLE IF NOT EXISTS clients (
     document_type VARCHAR(20) NOT NULL,
     document_id VARCHAR(50),
     document_prefix VARCHAR(20),
-    document_suffix VARCHAR(20)
+    document_suffix VARCHAR(20),
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP
 );
 
 -- PRODUCTS

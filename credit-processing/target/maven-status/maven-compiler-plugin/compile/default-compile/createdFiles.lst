@@ -1,0 +1,13 @@
+com/example/creditprocessing/client/ClientInfoApiClient.class
+com/example/creditprocessing/dto/CreditDecisionMessage.class
+com/example/creditprocessing/dto/ClientProductMessage.class
+com/example/creditprocessing/kafka/CreditRequestConsumer$ProductRegistry.class
+com/example/creditprocessing/repository/ProductRegistryRepository.class
+com/example/creditprocessing/CreditProcessingApplication.class
+com/example/creditprocessing/controller/RootController.class
+com/example/creditprocessing/entity/ProductRegistry.class
+com/example/creditprocessing/repository/PaymentRegistryRepository.class
+com/example/creditprocessing/controller/CreditController.class
+com/example/creditprocessing/client/ClientInfoApiClient$ClientInfo.class
+com/example/creditprocessing/entity/PaymentRegistry.class
+com/example/creditprocessing/kafka/CreditRequestConsumer.class

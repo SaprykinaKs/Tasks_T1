@@ -41,6 +41,10 @@ public class ProductRegistry {
     @Column(name = "interest_rate", precision = 5, scale = 2)
     private java.math.BigDecimal interestRate;
     
+    @Min(value = 1, message = "Month count must be at least 1")
+    @Column(name = "month_count")
+    private Integer monthCount;
+    
     @Builder.Default
     @Column(name = "open_date")
     private LocalDateTime openDate = LocalDateTime.now();

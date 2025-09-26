@@ -47,10 +47,29 @@
       <scope>runtime</scope>
       <optional>true</optional>
     </dependency>
+
+  <!-- Kafka -->
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka</artifactId>
+  </dependency>
+  
+
   </dependencies>
 
   <build>
     <plugins>
+      <!-- Flyway Maven Plugin -->
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>9.22.3</version>
+        <configuration>
+          <url>jdbc:postgresql://localhost:5432/tasks_t1</url>
+          <user>bank</user>
+          <password>bankpass</password>
+        </configuration>
+      </plugin>
       <!-- Spring Boot Maven plugin -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
