@@ -128,6 +128,8 @@ services:
       SPRING_DATASOURCE_USERNAME: bank
       SPRING_DATASOURCE_PASSWORD: bankpass
       SPRING_PROFILES_ACTIVE: docker
+      # it's because i make stupid in ClientInfoApiClient
+      ms1.client-info-url: http://client-processing:8081/api/v1/client-info 
     depends_on:
       postgres:
         condition: service_healthy

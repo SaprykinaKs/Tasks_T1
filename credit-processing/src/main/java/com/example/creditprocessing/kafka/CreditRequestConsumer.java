@@ -20,12 +20,16 @@ public class CreditRequestConsumer {
     private ClientInfoApiClient clientApi;
     @Autowired
     private KafkaTemplate<String, CreditDecisionMessage> kafkaTemplate;
-    @Value("${credit.limit}")
+    @Value("${app.credit.max-limit}")
     private BigDecimal creditLimitN;
+    @Value("${app.kafka.topics.credit-decision}")
+    private String creditDecisionTopic;
+    @Value("${app.kafka.topics.payment-schedule}")
+    private String paymentScheduleTopic;
 
     public record ProductRegistry(String productCode, BigDecimal outstandingDebt, boolean hasDelinquency, Integer monthCount) {}
     
-    @KafkaListener(topics = "client_credit_products", groupId = "credit-scoring-group")
+    @KafkaListener(topics = "${app.kafka.topics.credit-products}", groupId = "${spring.kafka.consumer.group-id}")
     public void listenForCreditRequest(ClientProductMessage request) {
         System.out.printf("MS-3: Received CREDIT request for client %d, amount: %s%n",
                           request.clientId(), request.amount());
@@ -90,7 +94,7 @@ public class CreditRequestConsumer {
         CreditDecisionMessage decision = new CreditDecisionMessage(
             request.clientId(), request.productCode(), "APPROVED", null
         );
-        kafkaTemplate.send("credit_decision", String.valueOf(request.clientId()), decision);
+        kafkaTemplate.send(creditDecisionTopic, String.valueOf(request.clientId()), decision);
         System.out.println("MS-3: Decision APPROVED sent to credit_decision topic.");
     }
 
@@ -98,7 +102,7 @@ public class CreditRequestConsumer {
         CreditDecisionMessage decision = new CreditDecisionMessage(
             request.clientId(), request.productCode(), "REJECTED", reason
         );
-        kafkaTemplate.send("credit_decision", String.valueOf(request.clientId()), decision);
+        kafkaTemplate.send(creditDecisionTopic, String.valueOf(request.clientId()), decision);
         System.out.printf("MS-3: Decision REJECTED (%s) sent to credit_decision topic.%n", reason);
     }
     
